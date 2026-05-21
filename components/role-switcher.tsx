@@ -3,13 +3,44 @@
 import { useRouter, usePathname } from "next/navigation"
 import { Users, Shield } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/lib/supabase/client"
+import { useEffect, useState } from "react"
 
 export function RoleSwitcher() {
   const router = useRouter()
   const pathname = usePathname()
+  const [isSuperadmin, setIsSuperadmin] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   
   const isAdmin = pathname.startsWith("/admin")
   const isClient = pathname.startsWith("/dashboard")
+
+  useEffect(() => {
+    const checkRole = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        setIsLoading(false)
+        return
+      }
+
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id)
+        .single()
+
+      setIsSuperadmin(profile?.role === "superadmin")
+      setIsLoading(false)
+    }
+
+    if (isAdmin || isClient) {
+      checkRole()
+    } else {
+      setIsLoading(false)
+    }
+  }, [isAdmin, isClient])
 
   const switchToClient = () => {
     router.push("/dashboard")
@@ -19,7 +50,11 @@ export function RoleSwitcher() {
     router.push("/admin")
   }
 
+  // Don't show for non-dashboard/admin pages
   if (!isAdmin && !isClient) return null
+  
+  // Don't show while loading or for non-superadmin users
+  if (isLoading || !isSuperadmin) return null
 
   return (
     <div className="fixed bottom-4 left-4 z-[90] bg-white rounded-2xl shadow-xl border border-gray-200 p-1.5 flex gap-1">
