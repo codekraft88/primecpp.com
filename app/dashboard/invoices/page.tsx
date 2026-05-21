@@ -1,67 +1,83 @@
 "use client"
 
-import { Download, Eye, FileText, Check, Clock, AlertTriangle, CreditCard, Search, Filter } from "lucide-react"
+import { Download, Eye, FileText, Check, Clock, AlertTriangle, CreditCard, Search, Filter, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/components/toast-provider"
+import { useInvoices } from "@/lib/supabase/hooks"
+import { EmptyInvoices } from "@/components/dashboard/empty-states"
+import { useState, useMemo } from "react"
 
-const invoices = [
-  {
-    id: "INV-2026-005",
-    date: "1. Mai 2026",
-    dueDate: "15. Mai 2026",
-    amount: 1190,
-    status: "open",
-    package: "SEO Growth",
-  },
-  {
-    id: "INV-2026-004",
-    date: "1. April 2026",
-    dueDate: "15. April 2026",
-    amount: 1190,
-    status: "paid",
-    package: "SEO Growth",
-  },
-  {
-    id: "INV-2026-003",
-    date: "1. Marz 2026",
-    dueDate: "15. Marz 2026",
-    amount: 1190,
-    status: "paid",
-    package: "SEO Growth",
-  },
-  {
-    id: "INV-2026-002",
-    date: "1. Februar 2026",
-    dueDate: "15. Februar 2026",
-    amount: 1190,
-    status: "paid",
-    package: "SEO Growth",
-  },
-  {
-    id: "INV-2026-001",
-    date: "1. Januar 2026",
-    dueDate: "15. Januar 2026",
-    amount: 1190,
-    status: "paid",
-    package: "SEO Growth",
-  },
-]
-
-const statusConfig = {
+const statusConfig: Record<string, { label: string; bgColor: string; textColor: string; icon: typeof Clock }> = {
+  draft: { label: "Entwurf", bgColor: "bg-gray-100", textColor: "text-gray-600", icon: FileText },
   open: { label: "Offen", bgColor: "bg-amber-100", textColor: "text-amber-700", icon: Clock },
   paid: { label: "Bezahlt", bgColor: "bg-emerald-100", textColor: "text-emerald-700", icon: Check },
   overdue: { label: "Uberfallig", bgColor: "bg-red-100", textColor: "text-red-700", icon: AlertTriangle },
+  cancelled: { label: "Storniert", bgColor: "bg-gray-100", textColor: "text-gray-600", icon: AlertTriangle },
+}
+
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString('de-CH', { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
+  })
+}
+
+function formatCurrency(amount: number): string {
+  return `CHF ${amount.toLocaleString('de-CH')}`
 }
 
 export default function InvoicesPage() {
   const { showToast } = useToast()
+  const { data: invoices, isLoading, error } = useInvoices()
+  const [searchQuery, setSearchQuery] = useState("")
+
+  const filteredInvoices = useMemo(() => {
+    if (!invoices) return []
+    if (!searchQuery) return invoices
+    const query = searchQuery.toLowerCase()
+    return invoices.filter(inv => 
+      inv.invoice_number.toLowerCase().includes(query)
+    )
+  }, [invoices, searchQuery])
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-[#007be4]" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-2xl bg-red-50 border border-red-100 p-6 text-center">
+        <p className="text-red-600">Fehler beim Laden der Rechnungen. Bitte versuchen Sie es erneut.</p>
+      </div>
+    )
+  }
+
+  if (!invoices || invoices.length === 0) {
+    return (
+      <div className="space-y-8 max-w-7xl">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Rechnungen</h1>
+          <p className="text-gray-500 mt-1">
+            Ubersicht aller Rechnungen und Zahlungshistorie
+          </p>
+        </div>
+        <EmptyInvoices />
+      </div>
+    )
+  }
+
   const openInvoices = invoices.filter(inv => inv.status === "open")
   const paidInvoices = invoices.filter(inv => inv.status === "paid")
   const overdueInvoices = invoices.filter(inv => inv.status === "overdue")
   
-  const totalOpen = openInvoices.reduce((sum, inv) => sum + inv.amount, 0)
-  const totalPaid = paidInvoices.reduce((sum, inv) => sum + inv.amount, 0)
+  const totalOpen = openInvoices.reduce((sum, inv) => sum + inv.total_amount, 0)
+  const totalPaid = paidInvoices.reduce((sum, inv) => sum + inv.total_amount, 0)
 
   const handleDownload = (invoiceId: string) => {
     showToast(`PDF fur ${invoiceId} wird heruntergeladen...`, "info")
@@ -96,7 +112,7 @@ export default function InvoicesPage() {
               <span className="text-xs font-semibold text-amber-700 bg-amber-100 px-2 py-0.5 rounded">{openInvoices.length}</span>
             )}
           </div>
-          <p className="text-2xl font-bold text-gray-900">CHF {totalOpen.toLocaleString('de-CH')}</p>
+          <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalOpen)}</p>
           <p className="text-sm text-gray-500 mt-0.5">Offen</p>
         </div>
 
@@ -126,7 +142,7 @@ export default function InvoicesPage() {
               <CreditCard className="h-5 w-5 text-blue-600" />
             </div>
           </div>
-          <p className="text-2xl font-bold text-gray-900">CHF {totalPaid.toLocaleString('de-CH')}</p>
+          <p className="text-2xl font-bold text-gray-900">{formatCurrency(totalPaid)}</p>
           <p className="text-sm text-gray-500 mt-0.5">Gesamt bezahlt</p>
         </div>
       </div>
@@ -142,12 +158,12 @@ export default function InvoicesPage() {
               <div>
                 <h3 className="font-semibold text-gray-900 mb-1">Offene Rechnung</h3>
                 <p className="text-sm text-gray-600">
-                  Rechnung {openInvoices[0].id} uber CHF {openInvoices[0].amount.toLocaleString('de-CH')} ist fallig am {openInvoices[0].dueDate}.
+                  Rechnung {openInvoices[0].invoice_number} uber {formatCurrency(openInvoices[0].total_amount)} ist fallig am {formatDate(openInvoices[0].due_date)}.
                 </p>
               </div>
             </div>
             <div className="flex gap-3">
-              <Button variant="outline" className="h-10 rounded-xl border-gray-200" onClick={() => handleView(openInvoices[0].id)}>
+              <Button variant="outline" className="h-10 rounded-xl border-gray-200" onClick={() => handleView(openInvoices[0].invoice_number)}>
                 <Eye className="mr-2 h-4 w-4" />
                 Ansehen
               </Button>
@@ -168,6 +184,8 @@ export default function InvoicesPage() {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 placeholder="Suchen..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9 h-9 w-48 bg-gray-50 border-gray-200 rounded-lg text-sm"
               />
             </div>
@@ -185,15 +203,14 @@ export default function InvoicesPage() {
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Rechnung</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Datum</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Fallig</th>
-                <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Paket</th>
                 <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Betrag</th>
                 <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">Aktionen</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {invoices.map((invoice) => {
-                const status = statusConfig[invoice.status as keyof typeof statusConfig]
+              {filteredInvoices.map((invoice) => {
+                const status = statusConfig[invoice.status] || statusConfig.open
                 const StatusIcon = status.icon
                 return (
                   <tr key={invoice.id} className="hover:bg-gray-50/50 transition-colors">
@@ -202,14 +219,13 @@ export default function InvoicesPage() {
                         <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
                           <FileText className="h-4 w-4 text-gray-500" />
                         </div>
-                        <span className="text-sm font-medium text-gray-900">{invoice.id}</span>
+                        <span className="text-sm font-medium text-gray-900">{invoice.invoice_number}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{invoice.date}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{invoice.dueDate}</td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{invoice.package}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{formatDate(invoice.created_at)}</td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{formatDate(invoice.due_date)}</td>
                     <td className="px-6 py-4 text-sm font-semibold text-gray-900 text-right">
-                      CHF {invoice.amount.toLocaleString('de-CH')}
+                      {formatCurrency(invoice.total_amount)}
                     </td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${status.bgColor} ${status.textColor}`}>
@@ -219,10 +235,10 @@ export default function InvoicesPage() {
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-900" onClick={() => handleView(invoice.id)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-900" onClick={() => handleView(invoice.invoice_number)}>
                           <Eye className="h-4 w-4" />
                         </Button>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-900" onClick={() => handleDownload(invoice.id)}>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-900" onClick={() => handleDownload(invoice.invoice_number)}>
                           <Download className="h-4 w-4" />
                         </Button>
                       </div>

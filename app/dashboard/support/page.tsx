@@ -2,106 +2,121 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { MessageSquare, Mail, Phone, Send, Clock, CheckCircle, ArrowUpRight, Plus, Upload, Paperclip, X } from "lucide-react"
+import { MessageSquare, Mail, Phone, Send, Clock, CheckCircle, ArrowUpRight, Plus, Upload, Paperclip, X, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useToast } from "@/components/toast-provider"
-
-const supportTickets = [
-  {
-    id: "TKT-2026-004",
-    subject: "Frage zur UGC-Lieferung",
-    status: "Offen",
-    priority: "Normal",
-    date: "5. Mai 2026",
-    lastUpdate: "5. Mai 2026",
-    relatedOrder: "ORD-2026-003",
-  },
-  {
-    id: "TKT-2026-003",
-    subject: "Frage zum monatlichen Report",
-    status: "Beantwortet",
-    priority: "Normal",
-    date: "25. April 2026",
-    lastUpdate: "26. April 2026",
-    relatedOrder: "ORD-2026-001",
-  },
-  {
-    id: "TKT-2026-002",
-    subject: "Keyword-Anpassung anfragen",
-    status: "Geschlossen",
-    priority: "Niedrig",
-    date: "15. Marz 2026",
-    lastUpdate: "17. Marz 2026",
-    relatedOrder: null,
-  },
-  {
-    id: "TKT-2026-001",
-    subject: "Onboarding Fragen",
-    status: "Geschlossen",
-    priority: "Hoch",
-    date: "2. Dezember 2025",
-    lastUpdate: "5. Dezember 2025",
-    relatedOrder: null,
-  },
-]
+import { useSupportTickets, useOrders } from "@/lib/supabase/hooks"
+import { EmptySupportTickets } from "@/components/dashboard/empty-states"
+import { createClient } from "@/lib/supabase/client"
 
 const topics = [
-  "Allgemeine Anfrage",
-  "Technische Frage",
-  "Rechnung & Zahlung",
-  "Paket andern",
-  "Report & Analyse",
-  "Lieferung & Revision",
-  "Kundigung",
-  "Sonstiges",
+  { value: "general", label: "Allgemeine Anfrage" },
+  { value: "technical", label: "Technische Frage" },
+  { value: "billing", label: "Rechnung & Zahlung" },
+  { value: "feedback", label: "Feedback" },
 ]
 
 const priorities = [
   { value: "low", label: "Niedrig" },
-  { value: "normal", label: "Normal" },
+  { value: "medium", label: "Normal" },
   { value: "high", label: "Hoch" },
+  { value: "urgent", label: "Dringend" },
 ]
 
-const relatedOrders = [
-  { value: "none", label: "Kein Auftrag" },
-  { value: "ORD-2026-001", label: "ORD-2026-001 - SEO Growth" },
-  { value: "ORD-2026-002", label: "ORD-2026-002 - Page Audit" },
-  { value: "ORD-2026-003", label: "ORD-2026-003 - UGC Video" },
-]
+const statusConfig: Record<string, { label: string; bgColor: string; textColor: string }> = {
+  "open": { label: "Offen", bgColor: "bg-amber-50", textColor: "text-amber-700" },
+  "in_progress": { label: "In Bearbeitung", bgColor: "bg-[#007be4]/10", textColor: "text-[#007be4]" },
+  "resolved": { label: "Gelost", bgColor: "bg-emerald-50", textColor: "text-emerald-700" },
+  "closed": { label: "Geschlossen", bgColor: "bg-gray-100", textColor: "text-gray-600" },
+}
 
-const statusConfig: Record<string, { bgColor: string; textColor: string }> = {
-  "Offen": { bgColor: "bg-amber-50", textColor: "text-amber-700" },
-  "Beantwortet": { bgColor: "bg-[#007be4]/10", textColor: "text-[#007be4]" },
-  "Geschlossen": { bgColor: "bg-gray-100", textColor: "text-gray-600" },
+function formatDate(dateString: string): string {
+  return new Date(dateString).toLocaleDateString('de-CH', { 
+    day: 'numeric', 
+    month: 'long', 
+    year: 'numeric' 
+  })
+}
+
+function formatTimeAgo(dateString: string): string {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diffMs = now.getTime() - date.getTime()
+  const diffMins = Math.floor(diffMs / (1000 * 60))
+  const diffHours = Math.floor(diffMs / (1000 * 60 * 60))
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+
+  if (diffMins < 60) return `vor ${diffMins} Minuten`
+  if (diffHours < 24) return `vor ${diffHours} Stunden`
+  if (diffDays === 1) return 'vor 1 Tag'
+  if (diffDays < 7) return `vor ${diffDays} Tagen`
+  return formatDate(dateString)
 }
 
 export default function SupportPage() {
   const { showToast } = useToast()
+  const { data: tickets, isLoading, error, mutate } = useSupportTickets()
+  const { data: orders } = useOrders()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showForm, setShowForm] = useState(false)
-  const [files, setFiles] = useState<string[]>([])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsSubmitting(true)
-    await new Promise((resolve) => setTimeout(resolve, 1500))
-    setIsSubmitting(false)
-    setShowForm(false)
-    setFiles([])
-    showToast("Ihre Support-Anfrage wurde eingereicht.", "success")
+    
+    const formData = new FormData(e.currentTarget)
+    const subject = formData.get('subject') as string
+    const message = formData.get('message') as string
+    const category = formData.get('topic') as string
+    const priority = formData.get('priority') as string
+
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        showToast("Sie mussen angemeldet sein.", "error")
+        return
+      }
+
+      const { error: insertError } = await supabase.from('support_tickets').insert({
+        user_id: user.id,
+        subject,
+        message,
+        category: category || 'general',
+        priority: priority || 'medium',
+        status: 'open',
+      })
+
+      if (insertError) throw insertError
+
+      setShowForm(false)
+      mutate() // Refresh tickets
+      showToast("Ihre Support-Anfrage wurde eingereicht.", "success")
+    } catch (err) {
+      showToast("Fehler beim Senden der Anfrage.", "error")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
-  const handleFileUpload = () => {
-    // Mock file upload
-    setFiles([...files, `dokument-${files.length + 1}.pdf`])
-    showToast("Datei wurde hinzugefugt.", "success")
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <Loader2 className="h-8 w-8 animate-spin text-[#007be4]" />
+      </div>
+    )
   }
 
-  const removeFile = (index: number) => {
-    setFiles(files.filter((_, i) => i !== index))
+  if (error) {
+    return (
+      <div className="rounded-2xl bg-red-50 border border-red-100 p-6 text-center">
+        <p className="text-red-600">Fehler beim Laden der Support-Anfragen. Bitte versuchen Sie es erneut.</p>
+      </div>
+    )
   }
 
   return (
@@ -179,8 +194,8 @@ export default function SupportPage() {
                   </SelectTrigger>
                   <SelectContent>
                     {topics.map((topic) => (
-                      <SelectItem key={topic} value={topic}>
-                        {topic}
+                      <SelectItem key={topic.value} value={topic.value}>
+                        {topic.label}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -188,7 +203,7 @@ export default function SupportPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Prioritat</label>
-                <Select name="priority" defaultValue="normal">
+                <Select name="priority" defaultValue="medium">
                   <SelectTrigger className="h-11 rounded-xl border-gray-200">
                     <SelectValue />
                   </SelectTrigger>
@@ -201,22 +216,6 @@ export default function SupportPage() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Zugehoriger Auftrag (optional)</label>
-              <Select name="relatedOrder">
-                <SelectTrigger className="h-11 rounded-xl border-gray-200">
-                  <SelectValue placeholder="Auftrag auswahlen" />
-                </SelectTrigger>
-                <SelectContent>
-                  {relatedOrders.map((order) => (
-                    <SelectItem key={order.value} value={order.value}>
-                      {order.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
             </div>
 
             <div>
@@ -240,30 +239,6 @@ export default function SupportPage() {
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Anhange (optional)</label>
-              <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-[#007be4]/50 transition-colors">
-                <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                <p className="text-sm text-gray-600 mb-2">Dateien hierher ziehen oder</p>
-                <Button type="button" variant="outline" size="sm" onClick={handleFileUpload} className="rounded-lg">
-                  <Paperclip className="h-4 w-4 mr-2" />
-                  Datei auswahlen
-                </Button>
-              </div>
-              {files.length > 0 && (
-                <div className="mt-3 space-y-2">
-                  {files.map((file, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                      <span className="text-sm text-gray-700">{file}</span>
-                      <Button type="button" variant="ghost" size="icon" onClick={() => removeFile(index)} className="h-7 w-7">
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-
             <div className="flex justify-end gap-3 pt-2">
               <Button type="button" variant="outline" onClick={() => setShowForm(false)} className="h-11 px-5 rounded-xl">
                 Abbrechen
@@ -274,7 +249,10 @@ export default function SupportPage() {
                 disabled={isSubmitting}
               >
                 {isSubmitting ? (
-                  "Wird gesendet..."
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Wird gesendet...
+                  </>
                 ) : (
                   <>
                     <Send className="mr-2 h-4 w-4" />
@@ -291,25 +269,13 @@ export default function SupportPage() {
       <div className="space-y-4">
         <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wider">Ihre Anfragen</h2>
         
-        {supportTickets.length === 0 ? (
-          <div className="rounded-2xl bg-white border border-gray-100 shadow-sm p-12 text-center">
-            <div className="w-16 h-16 mx-auto rounded-2xl bg-gray-100 flex items-center justify-center mb-4">
-              <MessageSquare className="h-8 w-8 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Keine Anfragen</h3>
-            <p className="text-gray-500 mb-6 max-w-md mx-auto">
-              Sie haben noch keine Support-Anfragen gestellt. Bei Fragen stehen wir Ihnen gerne zur Verfugung.
-            </p>
-            <Button onClick={() => setShowForm(true)} className="bg-[#007be4] hover:bg-[#0066c2] text-white h-11 px-5 rounded-xl">
-              <Plus className="mr-2 h-4 w-4" />
-              Neue Anfrage erstellen
-            </Button>
-          </div>
+        {!tickets || tickets.length === 0 ? (
+          <EmptySupportTickets />
         ) : (
           <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
             <div className="divide-y divide-gray-50">
-              {supportTickets.map((ticket) => {
-                const status = statusConfig[ticket.status]
+              {tickets.map((ticket) => {
+                const status = statusConfig[ticket.status] || statusConfig.open
                 return (
                   <div key={ticket.id} className="p-5 hover:bg-gray-50 transition-colors cursor-pointer group">
                     <div className="flex items-start justify-between gap-4">
@@ -317,25 +283,17 @@ export default function SupportPage() {
                         <div className="flex items-center gap-3 mb-1">
                           <p className="font-semibold text-gray-900">{ticket.subject}</p>
                           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${status.bgColor} ${status.textColor}`}>
-                            {ticket.status}
+                            {status.label}
                           </span>
                         </div>
                         <div className="flex items-center gap-3 text-sm text-gray-500">
-                          <span>{ticket.id}</span>
-                          <span className="text-gray-200">|</span>
-                          <span>Erstellt: {ticket.date}</span>
-                          {ticket.relatedOrder && (
-                            <>
-                              <span className="text-gray-200">|</span>
-                              <span>Auftrag: {ticket.relatedOrder}</span>
-                            </>
-                          )}
+                          <span>Erstellt: {formatDate(ticket.created_at)}</span>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="text-right hidden sm:block">
                           <p className="text-xs text-gray-400">Letzte Aktualisierung</p>
-                          <p className="text-sm text-gray-600">{ticket.lastUpdate}</p>
+                          <p className="text-sm text-gray-600">{formatTimeAgo(ticket.updated_at)}</p>
                         </div>
                         <ArrowUpRight className="h-5 w-5 text-gray-300 group-hover:text-[#007be4] transition-colors" />
                       </div>
