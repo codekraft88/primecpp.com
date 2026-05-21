@@ -26,6 +26,7 @@ import {
   Bell,
   Search,
   Loader2,
+  Shield,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
@@ -176,8 +177,6 @@ export default function DashboardLayout({
       const supabase = createClient()
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
       
-      console.log("[v0] Auth user:", authUser?.id, authError)
-      
       if (!authUser) {
         router.push("/login")
         return
@@ -189,10 +188,7 @@ export default function DashboardLayout({
         .eq("id", authUser.id)
         .single()
 
-      console.log("[v0] Profile result:", profile, profileError)
-
       if (profileError) {
-        console.error("[v0] Profile error:", profileError.message)
         // If profile doesn't exist, create a basic one from auth metadata
         if (profileError.code === "PGRST116") {
           setUser({
@@ -298,6 +294,17 @@ export default function DashboardLayout({
                     Einstellungen
                   </Link>
                 </DropdownMenuItem>
+                {user?.role === 'superadmin' && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="text-rose-600 focus:text-rose-600">
+                        <Shield className="mr-2 h-4 w-4" />
+                        Admin Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600 cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
@@ -435,6 +442,17 @@ export default function DashboardLayout({
                       Einstellungen
                     </Link>
                   </DropdownMenuItem>
+                  {user?.role === 'superadmin' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="text-rose-600 focus:text-rose-600">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600 cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
