@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Mail, MapPin, Clock, Send, MessageCircle } from "lucide-react"
+import { Mail, MapPin, Clock, Send, MessageCircle, Phone } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -35,6 +35,19 @@ export function ContactSection() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    // Honeypot check: if the hidden field has a value, silently block submission
+    const form = e.currentTarget
+    const honeypot = (form.elements.namedItem('website_url') as HTMLInputElement)?.value
+    if (honeypot) {
+      // Fake success to not alert bots
+      setIsSubmitting(true)
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      setIsSubmitting(false)
+      setIsSubmitted(true)
+      return
+    }
+
     setIsSubmitting(true)
     // Simulate form submission
     await new Promise((resolve) => setTimeout(resolve, 1500))
@@ -73,12 +86,24 @@ export function ContactSection() {
                 <div>
                   <h3 className="font-semibold text-foreground mb-1">E-Mail</h3>
                   <a href="mailto:info@primecpp.com" className="text-muted-foreground hover:text-primary transition-colors">
-                    info@primecpp.com
+                    {"info(a)primecpp.com"}
                   </a>
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 p-5 glass rounded-2xl hover-lift animate-slide-up opacity-0" style={{ animationDelay: '300ms', animationFillMode: 'forwards' }}>
+              <div className="flex items-start gap-4 p-5 glass rounded-2xl hover-lift animate-slide-up opacity-0" style={{ animationDelay: '250ms', animationFillMode: 'forwards' }}>
+                <div className="shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-emerald-500/15 text-emerald-600 transition-all duration-300">
+                  <Phone className="h-6 w-6" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground mb-1">Telefon</h3>
+                  <a href="tel:+41415522240" className="text-muted-foreground hover:text-primary transition-colors">
+                    +41 41 552 22 40
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-4 p-5 glass rounded-2xl hover-lift animate-slide-up opacity-0" style={{ animationDelay: '350ms', animationFillMode: 'forwards' }}>
                 <div className="shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-brand-cyan/20 text-cyan-600 transition-all duration-300">
                   <Clock className="h-6 w-6" />
                 </div>
@@ -88,7 +113,7 @@ export function ContactSection() {
                 </div>
               </div>
 
-              <div className="flex items-start gap-4 p-5 glass rounded-2xl hover-lift animate-slide-up opacity-0" style={{ animationDelay: '400ms', animationFillMode: 'forwards' }}>
+              <div className="flex items-start gap-4 p-5 glass rounded-2xl hover-lift animate-slide-up opacity-0" style={{ animationDelay: '500ms', animationFillMode: 'forwards' }}>
                 <div className="shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-brand-indigo/15 text-brand-indigo transition-all duration-300">
                   <MapPin className="h-6 w-6" />
                 </div>
@@ -119,6 +144,17 @@ export function ContactSection() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Honeypot field - hidden from real users, traps bots */}
+                <div className="absolute overflow-hidden" style={{ width: 0, height: 0, opacity: 0, position: 'absolute', top: -9999, left: -9999 }} aria-hidden="true">
+                  <label htmlFor="website_url">Website</label>
+                  <input
+                    type="text"
+                    id="website_url"
+                    name="website_url"
+                    tabIndex={-1}
+                    autoComplete="off"
+                  />
+                </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <FieldGroup>
                     <Field>
