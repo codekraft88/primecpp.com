@@ -504,38 +504,6 @@ export function PackagesSection() {
               ))}
             </div>
           </TabsContent>
-
-          <TabsContent value="backlinks" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {backlinkPackages.map((pkg) => (
-                <PackageCard key={pkg.name} pkg={pkg} />
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="websites" className="mt-0">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {websitePackages.map((pkg) => (
-                <PackageCard key={pkg.name} pkg={pkg} />
-              ))}
-            </div>
-          </TabsContent>
-
-          <TabsContent value="legacy" className="mt-0">
-            <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-8 p-4 bg-muted rounded-xl">
-                <p className="text-sm text-muted-foreground">
-                  Diese Pläne sind bestehende Legacy-Angebote. Für neue Projekte empfehlen wir 
-                  unsere aktuellen professionellen Pakete.
-                </p>
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {legacyPackages.map((pkg) => (
-                  <PackageCard key={pkg.name} pkg={pkg} variant="legacy" />
-                ))}
-              </div>
-            </div>
-          </TabsContent>
         </Tabs>
 
         {/* Pricing Note */}
