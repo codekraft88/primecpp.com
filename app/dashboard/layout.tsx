@@ -23,7 +23,6 @@ import {
   Link2,
   Video,
   Settings,
-  Bell,
   Search,
   Loader2,
   Shield,
@@ -38,6 +37,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { NotificationsDropdown } from "@/components/notifications-dropdown"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 
@@ -351,10 +351,7 @@ export default function DashboardLayout({
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-[#007be4] rounded-full" />
-            </Button>
+            <NotificationsDropdown />
             <Button variant="ghost" size="icon" asChild className="h-10 w-10 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl">
               <Link href="/dashboard/settings">
                 <Settings className="h-5 w-5" />
