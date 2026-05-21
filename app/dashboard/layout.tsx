@@ -244,14 +244,14 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-gray-50">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-col flex-1 bg-white border-r border-gray-200">
+        <div className="flex flex-col h-full bg-white border-r border-gray-200">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-5 border-b border-gray-100">
+          <div className="flex items-center justify-between h-16 px-5 border-b border-gray-100 shrink-0">
             <Logo />
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
+          <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto min-h-0">
             {navGroups.map((group, groupIndex) => (
               <div key={groupIndex}>
                 <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">
@@ -271,7 +271,7 @@ export default function DashboardLayout({
           </nav>
 
           {/* User section */}
-          <div className="p-4 border-t border-gray-100">
+          <div className="p-4 border-t border-gray-100 shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 w-full p-2.5 rounded-xl hover:bg-gray-50 transition-colors">
