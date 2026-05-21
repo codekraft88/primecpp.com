@@ -2,20 +2,36 @@
 
 import { useState } from "react"
 import Link from "next/link"
-import { ArrowLeft, Mail, CheckCircle } from "lucide-react"
+import { ArrowLeft, Mail, CheckCircle, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { FieldGroup, Field, FieldLabel } from "@/components/ui/field"
+import { createClient } from "@/lib/supabase/client"
 
 export default function ForgotPasswordPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     setIsLoading(true)
-    // Simulate sending reset email
-    await new Promise((resolve) => setTimeout(resolve, 1500))
+    setError(null)
+
+    const formData = new FormData(e.currentTarget)
+    const email = formData.get("email") as string
+
+    const supabase = createClient()
+    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/callback?next=/reset-password`,
+    })
+
+    if (resetError) {
+      setError("Fehler beim Senden der E-Mail. Bitte versuchen Sie es erneut.")
+      setIsLoading(false)
+      return
+    }
+
     setIsLoading(false)
     setIsSubmitted(true)
   }
@@ -67,6 +83,12 @@ export default function ForgotPasswordPage() {
               </div>
 
               <form onSubmit={handleSubmit} className="space-y-6">
+                {error && (
+                  <div className="p-4 bg-red-50 border border-red-200 rounded-xl flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    <p className="text-sm text-red-700">{error}</p>
+                  </div>
+                )}
                 <FieldGroup>
                   <Field>
                     <FieldLabel htmlFor="email">E-Mail-Adresse</FieldLabel>

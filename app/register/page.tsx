@@ -21,6 +21,19 @@ export default function RegisterPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     if (!acceptTerms) return
+
+    // Honeypot check: if the hidden field has a value, silently block submission
+    const form = e.currentTarget
+    const honeypot = (form.elements.namedItem('website_url') as HTMLInputElement)?.value
+    if (honeypot) {
+      // Fake success to not alert bots
+      setIsLoading(true)
+      await new Promise((resolve) => setTimeout(resolve, 1500))
+      setIsLoading(false)
+      setSuccess(true)
+      return
+    }
+
     setIsLoading(true)
     setError(null)
 
@@ -152,6 +165,17 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Honeypot field - hidden from real users, traps bots */}
+            <div className="absolute overflow-hidden" style={{ width: 0, height: 0, opacity: 0, position: 'absolute', top: -9999, left: -9999 }} aria-hidden="true">
+              <label htmlFor="website_url">Website</label>
+              <input
+                type="text"
+                id="website_url"
+                name="website_url"
+                tabIndex={-1}
+                autoComplete="off"
+              />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <FieldGroup>
                 <Field>

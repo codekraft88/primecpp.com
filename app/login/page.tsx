@@ -45,17 +45,13 @@ function LoginContent() {
 
     try {
       const supabase = createClient()
-      console.log("[v0] Attempting login for:", email)
       
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
       })
 
-      console.log("[v0] Auth response:", { data: data?.user?.id, error: authError })
-
       if (authError) {
-        console.log("[v0] Auth error details:", authError.message, authError.status, authError.name)
         const errorMessages: Record<string, string> = {
           "Invalid login credentials": "Ungultige Anmeldedaten. Bitte uberprufen Sie Ihre E-Mail und Ihr Passwort.",
           "Email not confirmed": "Ihre E-Mail-Adresse wurde noch nicht bestatigt.",
@@ -84,8 +80,7 @@ function LoginContent() {
       } else {
         router.push("/dashboard")
       }
-    } catch (err) {
-      console.log("[v0] Login catch error:", err)
+    } catch {
       setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.")
       setIsLoading(false)
     }

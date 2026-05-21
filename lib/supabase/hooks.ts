@@ -1,6 +1,6 @@
 "use client"
 
-import useSWR from "swr"
+import useSWR, { SWRConfiguration } from "swr"
 import { createClient } from "@/lib/supabase/client"
 import type { 
   Profile, 
@@ -15,6 +15,16 @@ import type {
 
 // Create a singleton supabase client for client-side hooks
 const getSupabase = () => createClient()
+
+// SWR configuration to prevent excessive requests
+const swrConfig: SWRConfiguration = {
+  revalidateOnFocus: false,        // Don't refetch when window regains focus
+  revalidateOnReconnect: false,    // Don't refetch on reconnect
+  revalidateIfStale: false,        // Don't automatically revalidate stale data
+  dedupingInterval: 60000,         // Dedupe requests within 60 seconds
+  errorRetryCount: 2,              // Limit retry attempts
+  errorRetryInterval: 5000,        // Wait 5 seconds between retries
+}
 
 // SWR fetcher for Supabase
 async function supabaseFetcher<T>(
@@ -42,7 +52,7 @@ export function useProfile() {
     
     if (error) throw error
     return data
-  })
+  }, swrConfig)
 }
 
 // Hook for dashboard stats
@@ -67,7 +77,7 @@ export function useDashboardStats() {
       openInvoices: invoices.count || 0,
       newReports: reports.count || 0,
     }
-  })
+  }, swrConfig)
 }
 
 // Hook for user requests
@@ -85,7 +95,7 @@ export function useRequests() {
 
     if (error) throw error
     return data || []
-  })
+  }, swrConfig)
 }
 
 // Hook for user offers
@@ -103,7 +113,7 @@ export function useOffers() {
 
     if (error) throw error
     return data || []
-  })
+  }, swrConfig)
 }
 
 // Hook for user orders
@@ -121,7 +131,7 @@ export function useOrders() {
 
     if (error) throw error
     return data || []
-  })
+  }, swrConfig)
 }
 
 // Hook for user invoices
@@ -139,7 +149,7 @@ export function useInvoices() {
 
     if (error) throw error
     return data || []
-  })
+  }, swrConfig)
 }
 
 // Hook for user reports
@@ -157,7 +167,7 @@ export function useReports() {
 
     if (error) throw error
     return data || []
-  })
+  }, swrConfig)
 }
 
 // Hook for user support tickets
@@ -175,7 +185,7 @@ export function useSupportTickets() {
 
     if (error) throw error
     return data || []
-  })
+  }, swrConfig)
 }
 
 // Hook for recent activity
@@ -268,7 +278,8 @@ export function useRecentActivity(limit = 10) {
         .sort((a, b) => b.date.getTime() - a.date.getTime())
         .slice(0, limit)
         .map(({ date, ...rest }) => rest)
-    }
+    },
+    swrConfig
   )
 }
 
