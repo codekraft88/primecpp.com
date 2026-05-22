@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Menu, X, User } from "lucide-react"
+import { Menu, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
@@ -113,16 +113,10 @@ export function Navigation() {
             <SheetContent side="right" className="w-full sm:w-80 p-0 glass-strong border-l-0">
               <SheetTitle className="sr-only">Navigation</SheetTitle>
               <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between p-5 border-b border-primary/10">
+                <div className="flex items-center p-5 border-b border-primary/10">
                   <Link href="/" className="flex items-center">
                     <PrimeCPPLogo />
                   </Link>
-                  <SheetClose asChild>
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 transition-colors">
-                      <X className="h-5 w-5" />
-                      <span className="sr-only">Close menu</span>
-                    </Button>
-                  </SheetClose>
                 </div>
                 <nav className="flex-1 overflow-y-auto p-5">
                   <div className="flex flex-col gap-2">
