@@ -84,7 +84,7 @@ export function PlatformAssetsSection() {
           <div className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white/10 border border-white/20 rounded-full mb-8 backdrop-blur-sm">
             <Database className="w-4 h-4 text-white" />
             <span className="text-sm font-medium text-white">Strategic Assets</span>
-            <span className="ml-1 px-2 py-0.5 bg-white/20 rounded text-xs font-semibold text-white">By us</span>
+            <span className="ml-1 px-2 py-0.5 bg-[#ffea00] rounded text-xs font-semibold text-gray-900">By us</span>
           </div>
           
           <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-6 text-balance animate-slide-up opacity-0" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
