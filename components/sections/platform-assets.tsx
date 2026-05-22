@@ -88,9 +88,9 @@ export function PlatformAssetsSection() {
           </div>
           
           <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-6 text-balance animate-slide-up opacity-0" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
-            <span className="relative inline-block">
+            <span className="relative inline-block pb-2 md:pb-3">
               Eigene Plattformprojekte
-              <svg className="absolute -bottom-1 md:-bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
+              <svg className="absolute bottom-0 left-0 w-full h-3 md:h-4" viewBox="0 0 200 12" fill="none" preserveAspectRatio="none">
                 <path d="M2 10C50 2 150 2 198 10" stroke="#ffea00" strokeWidth="4" strokeLinecap="round" />
               </svg>
             </span>
