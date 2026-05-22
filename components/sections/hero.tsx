@@ -43,7 +43,7 @@ export function HeroSection() {
           <div className="inline-flex items-center gap-2.5 px-5 py-2.5 glass rounded-full mb-12 shadow-xl animate-scale-in overflow-hidden relative">
             <div className="absolute inset-0 animate-shimmer" />
             <Sparkles className="w-4 h-4 text-primary relative z-10" />
-            <span className="text-sm font-medium text-foreground relative z-10">Digital Agency aus der Schweiz</span>
+            <span className="text-sm font-medium text-foreground relative z-10">Swiss quality. Digital excellence.</span>
           </div>
           
           {/* Main headline with staggered animation */}

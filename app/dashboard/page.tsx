@@ -100,7 +100,7 @@ export default function DashboardPage() {
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
-            Willkommen zuruck, {userName}
+            Willkommen zurück, {userName}
           </h1>
           <p className="text-gray-500 mt-1 max-w-xl">
             Hier finden Sie eine Ubersicht Ihrer Projekte, offenen Aufgaben und nachsten Schritte.
