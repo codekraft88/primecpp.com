@@ -88,7 +88,13 @@ export function PlatformAssetsSection() {
           </div>
           
           <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-6 text-balance animate-slide-up opacity-0" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
-            Eigene Plattformprojekte & digitale Assets
+            <span className="relative inline-block">
+              Eigene Plattformprojekte
+              <svg className="absolute -bottom-1 md:-bottom-2 left-0 w-full" viewBox="0 0 200 12" fill="none">
+                <path d="M2 10C50 2 150 2 198 10" stroke="#ffea00" strokeWidth="4" strokeLinecap="round" />
+              </svg>
+            </span>
+            {" "}& digitale Assets
           </h2>
           
           <p className="text-lg text-white/70 max-w-3xl mx-auto mb-4 animate-fade-in opacity-0" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
