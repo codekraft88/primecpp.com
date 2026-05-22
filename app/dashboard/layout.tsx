@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { NotificationsDropdown } from "@/components/notifications-dropdown"
+import { MobileFooterNav } from "@/components/mobile-footer-nav"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 
@@ -463,11 +464,14 @@ export default function DashboardLayout({
       </header>
 
       {/* Main Content */}
-      <main className="lg:pl-64 pt-16">
+      <main className="lg:pl-64 pt-16 pb-24 lg:pb-0">
         <div className="p-6 lg:p-8">
           {children}
         </div>
       </main>
+
+      {/* Mobile Footer Navigation */}
+      <MobileFooterNav />
     </div>
   )
 }
