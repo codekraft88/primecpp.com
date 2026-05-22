@@ -118,8 +118,8 @@ function LoginContent() {
             />
           </Link>
           <div>
-            <h1 className="text-5xl font-bold mb-6 leading-tight">
-              Willkommen<br />zuruck
+            <h1 className="text-5xl font-bold mb-6 leading-tight whitespace-nowrap">
+              Willkommen zurück
             </h1>
             <p className="text-white/80 text-lg leading-relaxed max-w-md">
               Melden Sie sich an, um Ihre Projekte, Pakete und Rechnungen zu verwalten.
