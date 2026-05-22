@@ -25,11 +25,13 @@ function LoginContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Check for error in URL params (e.g., from auth callback)
+  // Check for error in URL params (e.g., from auth callback or blocked account)
   useEffect(() => {
     const errorParam = searchParams.get("error")
     const errorDescription = searchParams.get("error_description")
-    if (errorParam) {
+    if (errorParam === "account_blocked") {
+      setError("Ihr Konto wurde gesperrt. Bitte kontaktieren Sie den Support.")
+    } else if (errorParam) {
       setError(errorDescription || errorParam)
     }
   }, [searchParams])

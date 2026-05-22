@@ -17,10 +17,10 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronDown,
   Coins,
   Shield,
   Loader2,
+  ClipboardList,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle } from "@/components/ui/sheet"
@@ -47,6 +47,7 @@ const navItems = [
   { href: "/admin/credits", label: "Credits verwalten", icon: Coins, comingSoon: true },
   { divider: true, label: "Mehr" },
   { href: "/admin/reports", label: "Reports", icon: BarChart3 },
+  { href: "/admin/audit-logs", label: "Audit Log", icon: ClipboardList },
   { href: "/admin/support", label: "Support", icon: HelpCircle, badge: 2 },
   { href: "/admin/settings", label: "Einstellungen", icon: Settings },
   { href: "/admin/qa", label: "Systemprüfung", icon: Shield },
