@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Mail, MapPin, Clock, Play } from "lucide-react"
+import Image from "next/image"
+import { Mail, MapPin, Clock } from "lucide-react"
 
 const services = [
   { href: "#services", label: "UI/UX Design" },
@@ -27,23 +28,13 @@ const legalLinks = [
 
 function FooterLogo() {
   return (
-    <div className="flex items-center group">
-      <div className="w-6 h-6 flex items-center justify-center bg-white rounded-lg mr-2 transition-all duration-300 group-hover:shadow-lg group-hover:shadow-white/30">
-        <Play className="w-3.5 h-3.5 text-[#007be4] fill-[#007be4]" />
-      </div>
-      <span className="text-xl font-bold tracking-tight text-white">PRIME</span>
-      <div className="flex items-center ml-1.5 gap-0.5">
-        <span className="w-7 h-7 flex items-center justify-center bg-white text-[#007be4] text-sm font-bold rounded-lg transition-all duration-300 group-hover:shadow-md group-hover:shadow-white/25">
-          C
-        </span>
-        <span className="w-7 h-7 flex items-center justify-center bg-white/85 text-[#007be4] text-sm font-bold rounded-lg transition-all duration-300 delay-75 group-hover:shadow-md group-hover:shadow-white/20">
-          P
-        </span>
-        <span className="w-7 h-7 flex items-center justify-center bg-white/70 text-[#007be4] text-sm font-bold rounded-lg transition-all duration-300 delay-150 group-hover:shadow-md group-hover:shadow-white/15">
-          P
-        </span>
-      </div>
-    </div>
+    <Image
+      src="/logo-blau.png"
+      alt="prime CPP"
+      width={160}
+      height={40}
+      className="h-9 w-auto brightness-0 invert transition-transform duration-300 hover:scale-105"
+    />
   )
 }
 
