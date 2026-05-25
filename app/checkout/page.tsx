@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, Suspense } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { ArrowLeft, Check, CreditCard, Building, Lock, ShieldCheck } from "lucide-react"
@@ -40,6 +40,22 @@ const packages = {
 }
 
 export default function CheckoutPage() {
+  return (
+    <Suspense fallback={<CheckoutLoading />}>
+      <CheckoutContent />
+    </Suspense>
+  )
+}
+
+function CheckoutLoading() {
+  return (
+    <div className="min-h-screen bg-muted/30 flex items-center justify-center">
+      <div className="animate-pulse text-muted-foreground">Laden...</div>
+    </div>
+  )
+}
+
+function CheckoutContent() {
   const searchParams = useSearchParams()
   const packageId = searchParams.get("package") || "seo-starter"
   const selectedPackage = packages[packageId as keyof typeof packages] || packages["seo-starter"]

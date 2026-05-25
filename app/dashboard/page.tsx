@@ -10,84 +10,21 @@ import {
   ArrowRight,
   Clock,
   AlertCircle,
-  TrendingUp,
   Plus,
   ChevronRight,
   HelpCircle,
   CreditCard,
-  Eye,
-  MessageSquare,
   Video,
   Search,
   Link2,
   Globe,
+  MessageSquare,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useDashboardStats, useRecentActivity, useProfile } from "@/lib/supabase/hooks"
+import { EmptyDashboard, DashboardSkeleton } from "@/components/dashboard/empty-states"
 
-// Mock data
-const dashboardData = {
-  user: {
-    name: "Max",
-    company: "Muster AG",
-  },
-  stats: {
-    openRequests: 2,
-    pendingOffers: 1,
-    activeOrders: 3,
-    openInvoices: 1,
-    newReports: 2,
-  },
-}
-
-// Action items requiring attention
-const actionItems = [
-  { 
-    id: 1, 
-    type: "offer", 
-    title: "Angebot \"SEO Text fur Landingpage\" prufen", 
-    status: "Freigabe ausstehend",
-    statusColor: "amber",
-    dueDate: "Fallig heute",
-    href: "/dashboard/offers/OFF-001",
-    cta: "Angebot prufen",
-    icon: FileCheck,
-  },
-  { 
-    id: 2, 
-    type: "invoice", 
-    title: "Rechnung CHF 1'190 bezahlen", 
-    status: "Zahlung ausstehend",
-    statusColor: "amber",
-    dueDate: "Fallig in 3 Tagen",
-    href: "/dashboard/invoices",
-    cta: "Jetzt bezahlen",
-    icon: CreditCard,
-  },
-  { 
-    id: 3, 
-    type: "feedback", 
-    title: "Feedback zu UGC Video geben", 
-    status: "Feedback offen",
-    statusColor: "amber",
-    dueDate: "vor 2 Tagen",
-    href: "/dashboard/ugc-videos",
-    cta: "Feedback geben",
-    icon: Video,
-  },
-  { 
-    id: 4, 
-    type: "report", 
-    title: "Page Audit Report ansehen", 
-    status: "Neu",
-    statusColor: "blue",
-    dueDate: "Heute geliefert",
-    href: "/dashboard/reports",
-    cta: "Report ansehen",
-    icon: BarChart3,
-  },
-]
-
-// Quick order services
+// Quick order services (static data - these are service options, not user data)
 const serviceCategories = [
   {
     label: "SEO & Content",
@@ -142,15 +79,20 @@ const serviceCategories = [
   },
 ]
 
-const recentActivity = [
-  { id: 1, type: "offer", title: "SEO Audit erhalten", description: "Angebot fur Website-Analyse", time: "vor 2 Stunden", status: "pending" },
-  { id: 2, type: "order", title: "Landingpage in Bearbeitung", description: "75% abgeschlossen", time: "vor 5 Stunden", status: "active" },
-  { id: 3, type: "invoice", title: "Rechnung #2024-015 bezahlt", description: "CHF 2,450.00", time: "vor 1 Tag", status: "completed" },
-  { id: 4, type: "report", title: "Monatsbericht verfugbar", description: "Performance Report Januar", time: "vor 2 Tagen", status: "new" },
-]
-
 export default function DashboardPage() {
-  const hasActionItems = actionItems.length > 0
+  const { data: profile, isLoading: profileLoading } = useProfile()
+  const { data: stats, isLoading: statsLoading } = useDashboardStats()
+  const { data: recentActivity, isLoading: activityLoading } = useRecentActivity(4)
+
+  const isLoading = profileLoading || statsLoading
+
+  if (isLoading) {
+    return <DashboardSkeleton />
+  }
+
+  const userName = profile?.full_name?.split(' ')[0] || 'Kunde'
+  const hasData = stats && (stats.openRequests > 0 || stats.pendingOffers > 0 || stats.activeOrders > 0 || stats.openInvoices > 0 || stats.newReports > 0)
+  const hasActionItems = stats && (stats.pendingOffers > 0 || stats.openInvoices > 0)
 
   return (
     <div className="space-y-8 max-w-7xl">
@@ -158,7 +100,7 @@ export default function DashboardPage() {
       <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
-            Willkommen zuruck, {dashboardData.user.name}
+            Willkommen zurück, {userName}
           </h1>
           <p className="text-gray-500 mt-1 max-w-xl">
             Hier finden Sie eine Ubersicht Ihrer Projekte, offenen Aufgaben und nachsten Schritte.
@@ -188,13 +130,13 @@ export default function DashboardPage() {
               <div className="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
                 <FileQuestion className="h-5 w-5 text-[#007be4]" />
               </div>
-              {dashboardData.stats.openRequests > 0 && (
+              {stats && stats.openRequests > 0 && (
                 <span className="flex items-center justify-center h-6 min-w-[24px] px-2 text-xs font-semibold rounded-full bg-blue-50 text-[#007be4]">
-                  {dashboardData.stats.openRequests}
+                  {stats.openRequests}
                 </span>
               )}
             </div>
-            <p className="text-2xl font-bold text-gray-900">{dashboardData.stats.openRequests}</p>
+            <p className="text-2xl font-bold text-gray-900">{stats?.openRequests || 0}</p>
             <p className="text-sm text-gray-500 mt-0.5">Offene Anfragen</p>
           </div>
         </Link>
@@ -205,14 +147,14 @@ export default function DashboardPage() {
               <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
                 <FileCheck className="h-5 w-5 text-amber-600" />
               </div>
-              {dashboardData.stats.pendingOffers > 0 && (
+              {stats && stats.pendingOffers > 0 && (
                 <span className="flex items-center justify-center h-6 min-w-[24px] px-2 text-xs font-semibold rounded-full bg-amber-50 text-amber-700">
                   <AlertCircle className="h-3 w-3 mr-0.5" />
-                  {dashboardData.stats.pendingOffers}
+                  {stats.pendingOffers}
                 </span>
               )}
             </div>
-            <p className="text-2xl font-bold text-gray-900">{dashboardData.stats.pendingOffers}</p>
+            <p className="text-2xl font-bold text-gray-900">{stats?.pendingOffers || 0}</p>
             <p className="text-sm text-gray-500 mt-0.5">Angebote zur Freigabe</p>
           </div>
         </Link>
@@ -224,7 +166,7 @@ export default function DashboardPage() {
                 <Briefcase className="h-5 w-5 text-emerald-600" />
               </div>
             </div>
-            <p className="text-2xl font-bold text-gray-900">{dashboardData.stats.activeOrders}</p>
+            <p className="text-2xl font-bold text-gray-900">{stats?.activeOrders || 0}</p>
             <p className="text-sm text-gray-500 mt-0.5">Aktive Auftrage</p>
           </div>
         </Link>
@@ -235,13 +177,13 @@ export default function DashboardPage() {
               <div className="w-10 h-10 rounded-xl bg-rose-50 flex items-center justify-center">
                 <CreditCard className="h-5 w-5 text-rose-600" />
               </div>
-              {dashboardData.stats.openInvoices > 0 && (
+              {stats && stats.openInvoices > 0 && (
                 <span className="flex items-center justify-center h-6 min-w-[24px] px-2 text-xs font-semibold rounded-full bg-rose-50 text-rose-700">
-                  {dashboardData.stats.openInvoices}
+                  {stats.openInvoices}
                 </span>
               )}
             </div>
-            <p className="text-2xl font-bold text-gray-900">{dashboardData.stats.openInvoices}</p>
+            <p className="text-2xl font-bold text-gray-900">{stats?.openInvoices || 0}</p>
             <p className="text-sm text-gray-500 mt-0.5">Offene Rechnungen</p>
           </div>
         </Link>
@@ -252,19 +194,22 @@ export default function DashboardPage() {
               <div className="w-10 h-10 rounded-xl bg-purple-50 flex items-center justify-center">
                 <BarChart3 className="h-5 w-5 text-purple-600" />
               </div>
-              {dashboardData.stats.newReports > 0 && (
+              {stats && stats.newReports > 0 && (
                 <span className="flex items-center justify-center h-6 min-w-[24px] px-2 text-xs font-semibold rounded-full bg-purple-50 text-purple-700">
-                  {dashboardData.stats.newReports}
+                  {stats.newReports}
                 </span>
               )}
             </div>
-            <p className="text-2xl font-bold text-gray-900">{dashboardData.stats.newReports}</p>
+            <p className="text-2xl font-bold text-gray-900">{stats?.newReports || 0}</p>
             <p className="text-sm text-gray-500 mt-0.5">Neue Reports</p>
           </div>
         </Link>
       </div>
 
-      {/* Heute wichtig - Action Required Section */}
+      {/* Empty state for new users */}
+      {!hasData && <EmptyDashboard />}
+
+      {/* Action Items - Only show if user has pending items */}
       {hasActionItems && (
         <div className="rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden">
           <div className="px-6 py-4 border-b border-gray-100 bg-amber-50/50">
@@ -279,45 +224,48 @@ export default function DashboardPage() {
             </div>
           </div>
           <div className="divide-y divide-gray-50">
-            {actionItems.map((item) => {
-              const Icon = item.icon
-              return (
-                <div key={item.id} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4 hover:bg-gray-50/50 transition-colors">
-                  <div className="flex items-start sm:items-center gap-4">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                      item.statusColor === 'amber' ? 'bg-amber-50' : 'bg-blue-50'
-                    }`}>
-                      <Icon className={`h-5 w-5 ${
-                        item.statusColor === 'amber' ? 'text-amber-600' : 'text-[#007be4]'
-                      }`} />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-medium text-gray-900">{item.title}</p>
-                      <div className="flex flex-wrap items-center gap-2 mt-1">
-                        <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                          item.statusColor === 'amber' 
-                            ? 'bg-amber-100 text-amber-700' 
-                            : 'bg-blue-100 text-blue-700'
-                        }`}>
-                          {item.status}
-                        </span>
-                        <span className="text-xs text-gray-400">{item.dueDate}</span>
-                      </div>
-                    </div>
+            {stats && stats.pendingOffers > 0 && (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4 hover:bg-gray-50/50 transition-colors">
+                <div className="flex items-start sm:items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-amber-50">
+                    <FileCheck className="h-5 w-5 text-amber-600" />
                   </div>
-                  <Button asChild size="sm" className={`h-9 rounded-lg flex-shrink-0 ${
-                    item.statusColor === 'amber'
-                      ? 'bg-amber-500 hover:bg-amber-600 text-white'
-                      : 'bg-[#007be4] hover:bg-[#0066c2] text-white'
-                  }`}>
-                    <Link href={item.href}>
-                      {item.cta}
-                      <ArrowRight className="ml-2 h-3.5 w-3.5" />
-                    </Link>
-                  </Button>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-900">{stats.pendingOffers} Angebot(e) zur Freigabe</p>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 mt-1">
+                      Freigabe ausstehend
+                    </span>
+                  </div>
                 </div>
-              )
-            })}
+                <Button asChild size="sm" className="h-9 rounded-lg flex-shrink-0 bg-amber-500 hover:bg-amber-600 text-white">
+                  <Link href="/dashboard/offers">
+                    Angebote prufen
+                    <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+              </div>
+            )}
+            {stats && stats.openInvoices > 0 && (
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-6 py-4 hover:bg-gray-50/50 transition-colors">
+                <div className="flex items-start sm:items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-amber-50">
+                    <CreditCard className="h-5 w-5 text-amber-600" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-medium text-gray-900">{stats.openInvoices} offene Rechnung(en)</p>
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700 mt-1">
+                      Zahlung ausstehend
+                    </span>
+                  </div>
+                </div>
+                <Button asChild size="sm" className="h-9 rounded-lg flex-shrink-0 bg-amber-500 hover:bg-amber-600 text-white">
+                  <Link href="/dashboard/invoices">
+                    Rechnungen ansehen
+                    <ArrowRight className="ml-2 h-3.5 w-3.5" />
+                  </Link>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -400,25 +348,40 @@ export default function DashboardPage() {
               </Link>
             </div>
             <div className="divide-y divide-gray-50">
-              {recentActivity.slice(0, 4).map((activity) => (
-                <div key={activity.id} className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50/50 transition-colors cursor-pointer">
-                  <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                    activity.status === 'pending' ? 'bg-amber-400' :
-                    activity.status === 'active' ? 'bg-[#007be4]' :
-                    activity.status === 'completed' ? 'bg-emerald-400' :
-                    'bg-purple-400'
-                  }`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900 truncate">{activity.title}</p>
-                    <p className="text-xs text-gray-400">{activity.time}</p>
+              {activityLoading ? (
+                <div className="px-6 py-4">
+                  <div className="animate-pulse space-y-3">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="h-10 bg-gray-100 rounded" />
+                    ))}
                   </div>
                 </div>
-              ))}
+              ) : recentActivity && recentActivity.length > 0 ? (
+                recentActivity.map((activity) => (
+                  <div key={activity.id} className="flex items-center gap-3 px-6 py-3 hover:bg-gray-50/50 transition-colors cursor-pointer">
+                    <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                      activity.status === 'pending' ? 'bg-amber-400' :
+                      activity.status === 'in_progress' ? 'bg-[#007be4]' :
+                      activity.status === 'completed' || activity.status === 'paid' ? 'bg-emerald-400' :
+                      activity.status === 'new' ? 'bg-purple-400' :
+                      'bg-gray-400'
+                    }`} />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-gray-900 truncate">{activity.title}</p>
+                      <p className="text-xs text-gray-400">{activity.time}</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="px-6 py-8 text-center">
+                  <p className="text-sm text-gray-400">Noch keine Aktivitaten</p>
+                </div>
+              )}
             </div>
           </div>
 
           {/* New Reports Badge */}
-          {dashboardData.stats.newReports > 0 && (
+          {stats && stats.newReports > 0 && (
             <Link href="/dashboard/reports">
               <div className="rounded-2xl bg-purple-50 border border-purple-100 p-5 hover:border-purple-200 hover:shadow-md transition-all group">
                 <div className="flex items-center gap-4">
@@ -426,7 +389,7 @@ export default function DashboardPage() {
                     <BarChart3 className="h-6 w-6 text-purple-600" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-sm font-semibold text-gray-900">{dashboardData.stats.newReports} neue Reports</p>
+                    <p className="text-sm font-semibold text-gray-900">{stats.newReports} neue Reports</p>
                     <p className="text-xs text-gray-500">Jetzt ansehen</p>
                   </div>
                   <ArrowRight className="h-5 w-5 text-purple-400 group-hover:text-purple-600 group-hover:translate-x-1 transition-all" />

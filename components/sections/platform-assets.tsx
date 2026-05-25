@@ -84,10 +84,17 @@ export function PlatformAssetsSection() {
           <div className="inline-flex items-center gap-2.5 px-5 py-2.5 bg-white/10 border border-white/20 rounded-full mb-8 backdrop-blur-sm">
             <Database className="w-4 h-4 text-white" />
             <span className="text-sm font-medium text-white">Strategic Assets</span>
+            <span className="ml-1 px-2 py-0.5 bg-[#ffea00] rounded text-xs font-semibold text-gray-900">By us</span>
           </div>
           
-          <h2 className="text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-6 text-balance animate-slide-up opacity-0" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
-            Eigene Plattformprojekte & digitale Assets
+          <h2 className="text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-6 text-balance animate-slide-up opacity-0" style={{ animationDelay: '100ms', animationFillMode: 'forwards' }}>
+            <span className="relative inline-block pb-2 md:pb-3">
+              Eigene Plattformprojekte
+              <svg className="absolute bottom-0 left-0 w-full h-3 md:h-4" viewBox="0 0 200 12" fill="none" preserveAspectRatio="none">
+                <path d="M2 10C50 2 150 2 198 10" stroke="#ffea00" strokeWidth="4" strokeLinecap="round" />
+              </svg>
+            </span>
+            {" "}& digitale Assets
           </h2>
           
           <p className="text-lg text-white/70 max-w-3xl mx-auto mb-4 animate-fade-in opacity-0" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }}>
@@ -137,7 +144,7 @@ export function PlatformAssetsSection() {
         </div>
 
         {/* Case Study Card */}
-        <div className="relative p-8 lg:p-12 rounded-3xl bg-white/10 border border-white/15 backdrop-blur-sm animate-scale-in opacity-0" style={{ animationDelay: '700ms', animationFillMode: 'forwards' }}>
+        <div className="relative p-6 md:p-8 lg:p-12 rounded-3xl bg-white/10 border border-white/15 backdrop-blur-sm animate-scale-in opacity-0 overflow-hidden" style={{ animationDelay: '700ms', animationFillMode: 'forwards' }}>
           {/* Decorative corner accent */}
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-white/10 to-transparent rounded-bl-[100px] rounded-tr-3xl" />
           
@@ -151,7 +158,7 @@ export function PlatformAssetsSection() {
                 <span className="text-sm font-medium text-white/80 tracking-wide uppercase">Private Platform Project</span>
               </div>
               
-              <h3 className="text-2xl lg:text-3xl font-bold text-white mb-3">
+              <h3 className="text-xl md:text-2xl lg:text-3xl font-bold text-white mb-3">
                 Subscription-Based Social Discovery Platform
               </h3>
               
@@ -163,11 +170,11 @@ export function PlatformAssetsSection() {
               </p>
               
               {/* Focus Points */}
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {caseFocusPoints.map((point) => (
                   <div key={point} className="flex items-center gap-2.5 text-sm text-white/75">
                     <Workflow className="w-4 h-4 text-white/60 shrink-0" />
-                    <span>{point}</span>
+                    <span className="break-words">{point}</span>
                   </div>
                 ))}
               </div>
@@ -175,7 +182,7 @@ export function PlatformAssetsSection() {
             
             {/* Right Side - CTAs */}
             <div className="flex flex-col justify-center">
-              <div className="p-8 rounded-2xl bg-white/10 border border-white/15">
+              <div className="p-6 md:p-8 rounded-2xl bg-white/10 border border-white/15">
                 <div className="flex items-start gap-4 mb-6">
                   <div className="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center shrink-0">
                     <Shield className="w-6 h-6 text-white" />
@@ -199,17 +206,17 @@ export function PlatformAssetsSection() {
                   </Button>
                   
                   <Button 
-                    variant="outline"
+                    variant="secondary"
                     onClick={() => scrollToContact()}
-                    className="w-full border-white/30 text-white hover:bg-white/10 hover:border-white/50 rounded-full py-6 text-base transition-all duration-300"
+                    className="w-full bg-white/15 border border-white/30 text-white hover:bg-white/25 hover:border-white/50 rounded-full py-6 text-base transition-all duration-300"
                   >
                     Strategisches Gespräch vereinbaren
                   </Button>
                 </div>
                 
-                <p className="text-xs text-white/50 text-center mt-5 flex items-center justify-center gap-2">
-                  <Lock className="w-3 h-3" />
-                  Aus Diskretions- und Wettbewerbsgründen werden bestimmte Plattformprojekte nicht öffentlich verlinkt.
+                <p className="text-xs text-white/50 text-center mt-5 flex flex-wrap items-center justify-center gap-2">
+                  <Lock className="w-3 h-3 shrink-0" />
+                  <span>Aus Diskretions- und Wettbewerbsgründen werden bestimmte Plattformprojekte nicht öffentlich verlinkt.</span>
                 </p>
               </div>
             </div>

@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import {
   LayoutDashboard,
   FileQuestion,
@@ -17,9 +17,10 @@ import {
   LogOut,
   Menu,
   X,
-  ChevronDown,
   Coins,
   Shield,
+  Loader2,
+  ClipboardList,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle } from "@/components/ui/sheet"
@@ -32,6 +33,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
+import { createClient } from "@/lib/supabase/client"
 
 const navItems = [
   { href: "/admin", label: "Übersicht", icon: LayoutDashboard },
@@ -45,6 +47,7 @@ const navItems = [
   { href: "/admin/credits", label: "Credits verwalten", icon: Coins, comingSoon: true },
   { divider: true, label: "Mehr" },
   { href: "/admin/reports", label: "Reports", icon: BarChart3 },
+  { href: "/admin/audit-logs", label: "Audit Log", icon: ClipboardList },
   { href: "/admin/support", label: "Support", icon: HelpCircle, badge: 2 },
   { href: "/admin/settings", label: "Einstellungen", icon: Settings },
   { href: "/admin/qa", label: "Systemprüfung", icon: Shield },
@@ -108,7 +111,46 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   const pathname = usePathname()
+  const router = useRouter()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const [isAuthorized, setIsAuthorized] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const checkAdmin = async () => {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        router.push('/login')
+        return
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .single()
+
+      if (!profile || profile.role !== 'superadmin') {
+        router.push('/dashboard')
+        return
+      }
+
+      setIsAuthorized(true)
+      setIsLoading(false)
+    }
+
+    checkAdmin()
+  }, [router])
+
+  if (isLoading || !isAuthorized) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-muted/30">
+        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-muted/30">

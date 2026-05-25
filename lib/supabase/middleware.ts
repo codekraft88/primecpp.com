@@ -51,6 +51,34 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url)
   }
 
+  // Check if user is blocked or archived
+  if (user && (request.nextUrl.pathname.startsWith('/dashboard') || request.nextUrl.pathname.startsWith('/admin'))) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role, status')
+      .eq('id', user.id)
+      .single()
+
+    // Block access for blocked or archived users
+    if (profile && (profile.status === 'blocked' || profile.status === 'archived')) {
+      // Sign out the blocked user
+      await supabase.auth.signOut()
+      const url = request.nextUrl.clone()
+      url.pathname = '/login'
+      url.searchParams.set('error', 'account_blocked')
+      return NextResponse.redirect(url)
+    }
+
+    // Protect admin routes: only superadmin users can access /admin
+    if (request.nextUrl.pathname.startsWith('/admin')) {
+      if (!profile || profile.role !== 'superadmin') {
+        const url = request.nextUrl.clone()
+        url.pathname = '/dashboard'
+        return NextResponse.redirect(url)
+      }
+    }
+  }
+
   // IMPORTANT: You *must* return the supabaseResponse object as it is.
   // If you're creating a new response object with NextResponse.next() make sure to:
   // 1. Pass the request in it, like so:

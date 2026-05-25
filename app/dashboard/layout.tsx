@@ -23,9 +23,9 @@ import {
   Link2,
   Video,
   Settings,
-  Bell,
   Search,
   Loader2,
+  Shield,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet"
@@ -37,6 +37,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+import { NotificationsDropdown } from "@/components/notifications-dropdown"
+import { MobileFooterNav } from "@/components/mobile-footer-nav"
 import { Input } from "@/components/ui/input"
 import { createClient } from "@/lib/supabase/client"
 
@@ -176,8 +178,6 @@ export default function DashboardLayout({
       const supabase = createClient()
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser()
       
-      console.log("[v0] Auth user:", authUser?.id, authError)
-      
       if (!authUser) {
         router.push("/login")
         return
@@ -189,10 +189,7 @@ export default function DashboardLayout({
         .eq("id", authUser.id)
         .single()
 
-      console.log("[v0] Profile result:", profile, profileError)
-
       if (profileError) {
-        console.error("[v0] Profile error:", profileError.message)
         // If profile doesn't exist, create a basic one from auth metadata
         if (profileError.code === "PGRST116") {
           setUser({
@@ -244,14 +241,14 @@ export default function DashboardLayout({
     <div className="min-h-screen bg-gray-50">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:left-0 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex flex-col flex-1 bg-white border-r border-gray-200">
+        <div className="flex flex-col h-full bg-white border-r border-gray-200">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-5 border-b border-gray-100">
+          <div className="flex items-center justify-between h-16 px-5 border-b border-gray-100 shrink-0">
             <Logo />
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto">
+          <nav className="flex-1 px-3 py-4 space-y-6 overflow-y-auto min-h-0">
             {navGroups.map((group, groupIndex) => (
               <div key={groupIndex}>
                 <p className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider px-3 mb-2">
@@ -271,7 +268,7 @@ export default function DashboardLayout({
           </nav>
 
           {/* User section */}
-          <div className="p-4 border-t border-gray-100">
+          <div className="p-4 border-t border-gray-100 shrink-0">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center gap-3 w-full p-2.5 rounded-xl hover:bg-gray-50 transition-colors">
@@ -298,6 +295,17 @@ export default function DashboardLayout({
                     Einstellungen
                   </Link>
                 </DropdownMenuItem>
+                {user?.role === 'superadmin' && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem asChild>
+                      <Link href="/admin" className="text-rose-600 focus:text-rose-600">
+                        <Shield className="mr-2 h-4 w-4" />
+                        Admin Dashboard
+                      </Link>
+                    </DropdownMenuItem>
+                  </>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600 cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
@@ -344,10 +352,7 @@ export default function DashboardLayout({
 
           {/* Right Actions */}
           <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" className="h-10 w-10 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl relative">
-              <Bell className="h-5 w-5" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-[#007be4] rounded-full" />
-            </Button>
+            <NotificationsDropdown />
             <Button variant="ghost" size="icon" asChild className="h-10 w-10 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-xl">
               <Link href="/dashboard/settings">
                 <Settings className="h-5 w-5" />
@@ -435,6 +440,17 @@ export default function DashboardLayout({
                       Einstellungen
                     </Link>
                   </DropdownMenuItem>
+                  {user?.role === 'superadmin' && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem asChild>
+                        <Link href="/admin" className="text-rose-600 focus:text-rose-600">
+                          <Shield className="mr-2 h-4 w-4" />
+                          Admin Dashboard
+                        </Link>
+                      </DropdownMenuItem>
+                    </>
+                  )}
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleSignOut} className="text-red-600 focus:text-red-600 cursor-pointer">
                     <LogOut className="mr-2 h-4 w-4" />
@@ -448,11 +464,14 @@ export default function DashboardLayout({
       </header>
 
       {/* Main Content */}
-      <main className="lg:pl-64 pt-16">
+      <main className="lg:pl-64 pt-16 pb-24 lg:pb-0">
         <div className="p-6 lg:p-8">
           {children}
         </div>
       </main>
+
+      {/* Mobile Footer Navigation */}
+      <MobileFooterNav />
     </div>
   )
 }

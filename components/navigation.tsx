@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Menu, X, User, Play } from "lucide-react"
+import Image from "next/image"
+import { Menu, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger, SheetClose, SheetTitle } from "@/components/ui/sheet"
 import { cn } from "@/lib/utils"
@@ -19,26 +20,14 @@ const navItems = [
 function PrimeCPPLogo({ className }: { className?: string }) {
   return (
     <div className={cn("flex items-center group", className)}>
-      {/* Play icon with animation */}
-      <div className="w-6 h-6 flex items-center justify-center bg-primary rounded-lg mr-2 transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg group-hover:shadow-primary/30">
-        <Play className="w-3.5 h-3.5 text-white fill-white transition-transform duration-300 group-hover:scale-110" />
-      </div>
-      {/* PRIME text */}
-      <span className="text-xl font-bold tracking-tight text-foreground transition-colors duration-300">
-        PRIME
-      </span>
-      {/* CPP boxes with staggered animation */}
-      <div className="flex items-center ml-1.5 gap-0.5">
-        <span className="w-7 h-7 flex items-center justify-center bg-primary text-white text-sm font-bold rounded-lg transition-all duration-300 group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:shadow-primary/30">
-          C
-        </span>
-        <span className="w-7 h-7 flex items-center justify-center bg-primary/85 text-white text-sm font-bold rounded-lg transition-all duration-300 delay-75 group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:shadow-primary/25">
-          P
-        </span>
-        <span className="w-7 h-7 flex items-center justify-center bg-primary/70 text-white text-sm font-bold rounded-lg transition-all duration-300 delay-150 group-hover:-translate-y-0.5 group-hover:shadow-md group-hover:shadow-primary/20">
-          P
-        </span>
-      </div>
+      <Image 
+        src="/logo-blau.png" 
+        alt="prime CPP" 
+        width={140} 
+        height={36} 
+        className="h-9 w-auto transition-transform duration-300 group-hover:scale-105"
+        priority
+      />
     </div>
   )
 }
@@ -124,16 +113,10 @@ export function Navigation() {
             <SheetContent side="right" className="w-full sm:w-80 p-0 glass-strong border-l-0">
               <SheetTitle className="sr-only">Navigation</SheetTitle>
               <div className="flex flex-col h-full">
-                <div className="flex items-center justify-between p-5 border-b border-primary/10">
+                <div className="flex items-center p-5 border-b border-primary/10">
                   <Link href="/" className="flex items-center">
                     <PrimeCPPLogo />
                   </Link>
-                  <SheetClose asChild>
-                    <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl hover:bg-primary/10 transition-colors">
-                      <X className="h-5 w-5" />
-                      <span className="sr-only">Close menu</span>
-                    </Button>
-                  </SheetClose>
                 </div>
                 <nav className="flex-1 overflow-y-auto p-5">
                   <div className="flex flex-col gap-2">

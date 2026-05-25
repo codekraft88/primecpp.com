@@ -25,11 +25,13 @@ function LoginContent() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Check for error in URL params (e.g., from auth callback)
+  // Check for error in URL params (e.g., from auth callback or blocked account)
   useEffect(() => {
     const errorParam = searchParams.get("error")
     const errorDescription = searchParams.get("error_description")
-    if (errorParam) {
+    if (errorParam === "account_blocked") {
+      setError("Ihr Konto wurde gesperrt. Bitte kontaktieren Sie den Support.")
+    } else if (errorParam) {
       setError(errorDescription || errorParam)
     }
   }, [searchParams])
@@ -45,6 +47,7 @@ function LoginContent() {
 
     try {
       const supabase = createClient()
+      
       const { data, error: authError } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -79,8 +82,7 @@ function LoginContent() {
       } else {
         router.push("/dashboard")
       }
-    } catch (err) {
-      console.log("[v0] Login catch error:", err)
+    } catch {
       setError("Ein unerwarteter Fehler ist aufgetreten. Bitte versuchen Sie es erneut.")
       setIsLoading(false)
     }
@@ -118,8 +120,8 @@ function LoginContent() {
             />
           </Link>
           <div>
-            <h1 className="text-5xl font-bold mb-6 leading-tight">
-              Willkommen<br />zuruck
+            <h1 className="text-5xl font-bold mb-6 leading-tight whitespace-nowrap">
+              Willkommen zurück
             </h1>
             <p className="text-white/80 text-lg leading-relaxed max-w-md">
               Melden Sie sich an, um Ihre Projekte, Pakete und Rechnungen zu verwalten.
